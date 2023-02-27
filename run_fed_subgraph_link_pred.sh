@@ -9,4 +9,4 @@ hostname > mpi_host_file
 
 mpirun -np $PROCESS_NUM \
 -hostfile mpi_host_file --oversubscribe \
-python fedml_subgraph_link_prediction.py --cf config/simulation/fedml_config.yaml
+python3 fedml_subgraph_link_prediction.py --cf config/simulation/fedml_config.yaml
