@@ -116,6 +116,7 @@ def _subgraphing(g, partion, mapping_user, mapping_item2category):
     # print(len(set(mapping_user.keys())))
     # N = len(set(mapping_user.keys()))
     print('user code working maybe')
+    N_init = 6750
     N = 250
     nodelist = [[] for i in range(int(len(set(mapping_user.values()))/N)+1)]
     i = 0
@@ -127,6 +128,7 @@ def _subgraphing(g, partion, mapping_user, mapping_item2category):
             # print(n)
             nodelist[c].append(n)
         i += 1
+        # if i%N == 0 and i>=N_init:
         if i%N == 0:
             c += 1
     nl1 = []
