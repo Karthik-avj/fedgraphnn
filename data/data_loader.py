@@ -104,11 +104,37 @@ def _convert_to_nodeDegreeFeatures(graphs):
     return new_graphs
 
 
-def _subgraphing(g, partion, mapping_item2category):
-    nodelist = [[] for i in set(mapping_item2category.keys())]
-    for k, v in partion.items():
-        for category in v:
-            nodelist[category].append(k)
+def _subgraphing(g, partion, mapping_user, mapping_item2category):
+    # nodelist = [[] for i in set(mapping_item2category.keys())]
+    # for k, v in partion.items():
+    #     # print('yo', k, v)
+    #     for category in v:
+    #         nodelist[category].append(k)
+    #         # nodelist[28+category].append(k[1::2])
+
+    # print(len(nodelist[55]))
+    # print(len(set(mapping_user.keys())))
+    # N = len(set(mapping_user.keys()))
+    print('user code working maybe')
+    N = 250
+    nodelist = [[] for i in range(int(len(set(mapping_user.values()))/N)+1)]
+    i = 0
+    c = 0
+    # print(mapping_user)
+    for k in set(mapping_user.values()):
+        nodelist[c].append(k)
+        for n in g.neighbors(k):
+            # print(n)
+            nodelist[c].append(n)
+        i += 1
+        if i%N == 0:
+            c += 1
+    nl1 = []
+    for c in range(len(nodelist)):
+        nl1.append(list(set(nodelist[c])))
+
+    #print(len(nodelist), len(nodelist[0]))
+    nodelist = nl1
 
     graphs = []
     for nodes in nodelist:
@@ -125,6 +151,9 @@ def _read_mapping(path, data, filename):
         for line in f:
             s = line.strip().split()
             mapping[int(s[0])] = int(s[1])
+            # if filename=='category.dict':
+                # print("addingvghbjngcfyvgubhjg.................")
+                # mapping[int(s[0])] = (mapping[int(s[0])]+2)%28
 
     return mapping
 
@@ -173,6 +202,8 @@ def get_data_category(args, path, data, load_processed=True):
         mapping_user = _read_mapping(path, data, "user.dict")
         mapping_item = _read_mapping(path, data, "item.dict")
         mapping_item2category = _read_mapping(path, data, "category.dict")
+        # for i in mapping_item2category.keys():
+        #     mapping_item2category[i] = (mapping_item2category[i]+2)%28
         logging.info("build networkx graph")
 
         graph = _build_nxGraph(path, data, "graph.txt", mapping_user, mapping_item)
@@ -180,7 +211,7 @@ def get_data_category(args, path, data, load_processed=True):
 
         partion = partition_by_category(graph, mapping_item2category)
         logging.info("subgraphing")
-        graphs = _subgraphing(graph, partion, mapping_item2category)
+        graphs = _subgraphing(graph, partion, mapping_user, mapping_item2category)
 
     logging.info(
         "check client num is smaller than subgraphs number, which is "
