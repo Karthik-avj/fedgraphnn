@@ -18,7 +18,7 @@ class FedSubgraphLPTrainer(ClientTrainer):
         return self.model.cpu().state_dict()
 
     def set_model_params(self, model_parameters):
-        logging.info("set_model_params")
+        # logging.info("set_model_params")
         self.model.load_state_dict(model_parameters)
 
     def train(self, train_data, device, args):
@@ -108,15 +108,15 @@ class FedSubgraphLPTrainer(ClientTrainer):
     def test_on_the_server(
         self, train_data_local_dict, test_data_local_dict, device, args=None
     ) -> bool:
-        logging.info("----------test_on_the_server--------")
+        # logging.info("----------test_on_the_server--------")
 
         model_list, score_list, mae_list, rmse_list, mse_list = [], [], [], [], []
         for client_idx in test_data_local_dict.keys():
             test_data = test_data_local_dict[client_idx]
             score, model, mae, rmse, mse = self.test(test_data, device, val=False)
 
-            for idx in range(len(model_list)):
-                self._compare_models(model, model_list[idx])
+            # for idx in range(len(model_list)):
+            #     self._compare_models(model, model_list[idx])
             model_list.append(model)
             score_list.append(score)
             mae_list.append(mae)
@@ -166,11 +166,13 @@ class FedSubgraphLPTrainer(ClientTrainer):
             else:
                 models_differ += 1
                 if key_item_1[0] == key_item_2[0]:
-                    logging.info("Mismatch found at", key_item_1[0])
+                    pass
+                    # logging.info("Mismatch found at", key_item_1[0])
                 else:
                     raise Exception
         if models_differ == 0:
-            logging.info("Models match perfectly! :)")
+            pass
+            # logging.info("Models match perfectly! :)")
 
     def get_link_labels(self, pos_edge_index, neg_edge_index, device):
         num_links = pos_edge_index.size(1) + neg_edge_index.size(1)

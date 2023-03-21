@@ -50,7 +50,7 @@ def load_data(args):
 
 
 def create_model(args, model_name, feature_dim):
-    logging.info("create_model. model_name = %s" % (model_name))
+    # logging.info("create_model. model_name = %s" % (model_name))
     if model_name == "gcn":
         model = GCNLinkPred(feature_dim, args.hidden_size, args.node_embedding_dim)
     elif model_name == "gat":

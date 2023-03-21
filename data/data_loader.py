@@ -104,20 +104,10 @@ def _convert_to_nodeDegreeFeatures(graphs):
     return new_graphs
 
 
-def _subgraphing(g, partion, mapping_user, mapping_item2category):
-    # nodelist = [[] for i in set(mapping_item2category.keys())]
-    # for k, v in partion.items():
-    #     # print('yo', k, v)
-    #     for category in v:
-    #         nodelist[category].append(k)
-    #         # nodelist[28+category].append(k[1::2])
-
-    # print(len(nodelist[55]))
-    # print(len(set(mapping_user.keys())))
-    # N = len(set(mapping_user.keys()))
+def _subgraphing(C, g, mapping_user):
     print('user code working maybe')
     N_init = 6750
-    N = 250
+    N = int(7375/C)
     nodelist = [[] for i in range(int(len(set(mapping_user.values()))/N)+1)]
     i = 0
     c = 0
@@ -153,9 +143,6 @@ def _read_mapping(path, data, filename):
         for line in f:
             s = line.strip().split()
             mapping[int(s[0])] = int(s[1])
-            # if filename=='category.dict':
-                # print("addingvghbjngcfyvgubhjg.................")
-                # mapping[int(s[0])] = (mapping[int(s[0])]+2)%28
 
     return mapping
 
@@ -174,20 +161,20 @@ def _build_nxGraph(path, data, filename, mapping_user, mapping_item):
     return G
 
 
-def combine_category(graphs, category_split):
+def combine_user(graphs, user_split):
     combined_graph = []
-    for i in range(len(category_split)):
-        ls = category_split[i]
-        logging.info("combining subgraphs for " + str(i) + " client")
+    for i in range(len(user_split)):
+        ls = user_split[i]
+        # logging.info("combining subgraphs for " + str(i) + " client")
         graph_new = graphs[ls[0]]
         for i in range(1, len(ls)):
-            logging.info("combined " + str(i + 1) + " subgraphs")
+            # logging.info("combined " + str(i + 1) + " subgraphs")
             graph_new = combine_subgraphs(graph_new, graphs[ls[i]])
         combined_graph.append(graph_new)
     return combined_graph
 
 
-def get_data_category(args, path, data, load_processed=True):
+def get_data_user(args, path, data, load_processed=True):
     """For link prediction."""
     if load_processed:
         if args.client_num_in_total > 1:
@@ -200,64 +187,50 @@ def get_data_category(args, path, data, load_processed=True):
 
     else:
 
-        logging.info("read mapping")
+        # logging.info("read mapping")
         mapping_user = _read_mapping(path, data, "user.dict")
         mapping_item = _read_mapping(path, data, "item.dict")
-        mapping_item2category = _read_mapping(path, data, "category.dict")
-        # for i in mapping_item2category.keys():
-        #     mapping_item2category[i] = (mapping_item2category[i]+2)%28
-        logging.info("build networkx graph")
+        # logging.info("build networkx graph")
 
         graph = _build_nxGraph(path, data, "graph.txt", mapping_user, mapping_item)
-        logging.info("get partion")
+        # logging.info("get partion")
 
-        partion = partition_by_category(graph, mapping_item2category)
-        logging.info("subgraphing")
-        graphs = _subgraphing(graph, partion, mapping_user, mapping_item2category)
+        # logging.info("subgraphing")
+        graphs = _subgraphing(args.client_num_in_total, graph, mapping_user)
 
-    logging.info(
-        "check client num is smaller than subgraphs number, which is "
-        + str(len(graphs))
-    )
+    # logging.info(
+    #     "check client num is smaller than subgraphs number, which is "
+    #     + str(len(graphs))
+    # )
     assert args.client_num_in_total <= len(graphs)
 
     perm = list(torch.randperm(len(graphs)))
-    category_split = np.array_split(perm, args.client_num_in_total)
-    graphs = combine_category(graphs, category_split)
+    user_split = np.array_split(perm, args.client_num_in_total)
+    graphs = combine_user(graphs, user_split)
 
-    logging.info("converting to node degree")
+    # logging.info("converting to node degree")
     graphs = _convert_to_nodeDegreeFeatures(graphs)
     graphs_split = []
-    logging.info("spliting into trian val and test")
+    # logging.info("spliting into trian val and test")
     for g in graphs:
         graphs_split.append(split_graph(g))
     return graphs_split
 
 
-def partition_by_category(graph, mapping_item2category):
-    partition = {}
-    for key in mapping_item2category:
-        partition[key] = [mapping_item2category[key]]
-        for neighbor in graph.neighbors(key):
-            if neighbor not in partition:
-                partition[neighbor] = []
-            partition[neighbor].append(mapping_item2category[key])
-    return partition
 
-
-def create_category_split(
+def create_user_split(
     args, path, data, pred_task="link_prediction", algo="Louvain"
 ):
     assert pred_task in ["link_prediction"]
-    logging.info("reading data")
+    # logging.info("reading data")
 
-    graphs_split = get_data_category(args, path, data, load_processed=False)
+    graphs_split = get_data_user(args, path, data, load_processed=False)
 
     return graphs_split
 
 
-def partition_data_by_category(args, path, compact=True):
-    graphs_split = create_category_split(args, path, args.dataset, args.pred_task)
+def partition_data_by_user(args, path, compact=True):
+    graphs_split = create_user_split(args, path, args.dataset, args.pred_task)
 
     client_number = len(graphs_split)
 
@@ -276,7 +249,7 @@ def partition_data_by_category(args, path, compact=True):
 
 # Single process sequential
 def load_partition_data(args, path, client_number):
-    global_data_dict, partition_dicts = partition_data_by_category(args, path)
+    global_data_dict, partition_dicts = partition_data_by_user(args, path)
     feature_dim = global_data_dict["graphs"][0].x.shape[1]
 
     data_local_num_dict = {}
@@ -296,11 +269,11 @@ def load_partition_data(args, path, client_number):
         train_data_local_dict[client] = DataLoader(
             [train_dataset_client], batch_size=1, shuffle=True, pin_memory=True
         )
-        logging.info(
-            "Client idx = {}, local sample number = {}".format(
-                client, len(train_dataset_client)
-            )
-        )
+        # logging.info(
+        #     "Client idx = {}, local sample number = {}".format(
+        #         client, len(train_dataset_client)
+        #     )
+        # )
 
     val_data_num = test_data_num = train_data_num
     val_data_local_dict = test_data_local_dict = train_data_local_dict
