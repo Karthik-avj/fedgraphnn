@@ -105,14 +105,18 @@ def _convert_to_nodeDegreeFeatures(graphs):
 
 
 def _subgraphing(C, g, mapping_user):
-    print('user code working maybe')
+    # print('user code working maybe')
     N_init = 0
     N = int((7375-N_init)/C)
     nodelist = [[] for i in range(int(len(set(mapping_user.values()))/N)+1)]
     i = 0
     c = 0
-    # print(mapping_user)
-    for k in set(mapping_user.values()):
+    # print("yo", mapping_user.values())
+    l = list(set(mapping_user.values()))
+    # print("yes", l)
+    random.shuffle(l)
+    # for k in set(mapping_user.values()):
+    for k in l:
         nodelist[c].append(k)
         for n in g.neighbors(k):
             # print(n)
