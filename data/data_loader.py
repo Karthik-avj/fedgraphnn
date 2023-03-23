@@ -21,7 +21,7 @@ def setup_seed(seed):
     torch.backends.cudnn.deterministic = True
 
 
-def split_graph(graph, train_ratio=0.8, val_ratio=0.1, test_ratio=0.1):
+def split_graph(graph, train_ratio=0.8, val_ratio=0.1, test_ratio=0.1): # This function splits the graph dataset into test, train, and validation sets
     assert train_ratio + val_ratio + test_ratio == 1
     graph.edge_label = graph.edge_label.float()
     edge_size = graph.edge_label.size()[0]
@@ -104,18 +104,14 @@ def _convert_to_nodeDegreeFeatures(graphs):
     return new_graphs
 
 
-def _subgraphing(C, g, mapping_user):
-    # print('user code working maybe')
+def _subgraphing(C, g, mapping_user): # This function splits the full graph of user-item interactions into the datasets available at each client
     N_init = 0
     N = int((7375-N_init)/C)
     nodelist = [[] for i in range(int(len(set(mapping_user.values()))/N)+1)]
     i = 0
     c = 0
-    # print("yo", mapping_user.values())
     l = list(set(mapping_user.values()))
-    # print("yes", l)
-    random.shuffle(l)
-    # for k in set(mapping_user.values()):
+    random.shuffle(l)  # This shuffling is used to ensure that a random set of users are assigned to each client
     for k in l:
         nodelist[c].append(k)
         for n in g.neighbors(k):
@@ -129,7 +125,6 @@ def _subgraphing(C, g, mapping_user):
     for c in range(len(nodelist)):
         nl1.append(list(set(nodelist[c])))
 
-    #print(len(nodelist), len(nodelist[0]))
     nodelist = nl1
 
     graphs = []
@@ -233,7 +228,7 @@ def create_user_split(
     return graphs_split
 
 
-def partition_data_by_user(args, path, compact=True):
+def partition_data_by_user(args, path, compact=True):  # We write this function to partition the dataset by the users assigned to different clients
     graphs_split = create_user_split(args, path, args.dataset, args.pred_task)
 
     client_number = len(graphs_split)
