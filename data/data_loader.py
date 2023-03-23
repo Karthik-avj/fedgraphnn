@@ -106,7 +106,7 @@ def _convert_to_nodeDegreeFeatures(graphs):
 
 def _subgraphing(C, g, mapping_user): # This function splits the full graph of user-item interactions into the datasets available at each client
     N_init = 0
-    N = int((7375-N_init)/C)
+    N = int((len(mapping_user)-N_init)/C)
     nodelist = [[] for i in range(int(len(set(mapping_user.values()))/N)+1)]
     i = 0
     c = 0
