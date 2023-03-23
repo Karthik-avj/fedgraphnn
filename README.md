@@ -1,19 +1,21 @@
-# Subgraph-Level Link Prediction for Recommender Systems
+To run the project: sh run_fed_subgraph_link_pred.sh 4
 
-## Motivation 
+Parameters you can change: 
+In the config/simulation/fedml_config.yaml, you can change the following parameters:
 
-As graphs are getting bigger and bigger nowadays, it is common to see their subgraphs
-separately collected and stored in multiple local systems. Therefore, it is natural to
-consider the subgraph federated learning setting, where each local user/system holds
-a small subgraph that may be biased from the distribution of the whole graph.
-Hence, the subgraph federated learning aims to collaboratively train a powerful
-and generalizable graph mining model without directly sharing their graph data. The first realistic scenario is subgraph link prediction task for recommendation
-systems, where the users can interact with items owned by different shops or sectors, which
-makes each data owner only holding a part of the global user-item graph. To simulate such
-scenarios, we use recommendation datasets from publicly available sources  which have high-quality meta-data information.
+To run another model change the 'model' parameter to:
+For GCN: "gcn", GIN: "gin", ChebConv: "cheb", GraphSage: "sage", GAT: "gat"
 
-## Training
-Before starting training, make sure that setup with  `config/fedml_config.yaml` is correct. For this tasks we have two available datasets:  `ciao` and `epinions`. Then, run the following script with the desired number of GPU workers.
-```
-sh run_fed_subgraph_link_pred.sh 4
-```
+To change number of clients wunning the federated setting:
+change 'client_num_in_total' and 'client_num_per_round'
+
+To change the dataset change 'dataset' to:
+'ciao' or 'epinion'
+
+What each file does:
+data/data_loader manipulates the dataset to group users that can be used by the federated setting
+fedml_subgraph_link_prediction.py looks at the args and calls the appropriate model, federated learning agents
+trainer/fed_subgraph_lp_trainer.py train the fedml federated model
+trainer/fed_subgraph_lp_aggregator.py aggregates the fedml federated model for the global model let say gcn
+model/gcn_link.py is the gcn(global) model, similarly for other models
+config/simulation/fedml_config.yaml stores the parameters used by the model

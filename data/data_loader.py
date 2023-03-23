@@ -106,8 +106,8 @@ def _convert_to_nodeDegreeFeatures(graphs):
 
 def _subgraphing(C, g, mapping_user):
     print('user code working maybe')
-    N_init = 6750
-    N = int(7375/C)
+    N_init = 0
+    N = int((7375-N_init)/C)
     nodelist = [[] for i in range(int(len(set(mapping_user.values()))/N)+1)]
     i = 0
     c = 0
@@ -118,8 +118,8 @@ def _subgraphing(C, g, mapping_user):
             # print(n)
             nodelist[c].append(n)
         i += 1
-        # if i%N == 0 and i>=N_init:
-        if i%N == 0:
+        if i%N == 0 and i>=N_init:
+        # if i%N == 0:
             c += 1
     nl1 = []
     for c in range(len(nodelist)):

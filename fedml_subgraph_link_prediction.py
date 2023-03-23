@@ -3,6 +3,8 @@ from trainer.fed_subgraph_lp_aggregator import FedSubgraphLPAggregator
 from data.data_loader import *
 from fedml import FedMLRunner
 from model.gcn_link import GCNLinkPred
+from model.cheb_link import ChebLinkPred
+from model.gin_link import GINLinkPred
 from model.gat_link import GATLinkPred
 from model.sage_link import SAGELinkPred
 
@@ -53,6 +55,10 @@ def create_model(args, model_name, feature_dim):
     # logging.info("create_model. model_name = %s" % (model_name))
     if model_name == "gcn":
         model = GCNLinkPred(feature_dim, args.hidden_size, args.node_embedding_dim)
+    elif model_name == "cheb":
+        model = ChebLinkPred(feature_dim, args.hidden_size, args.node_embedding_dim)
+    elif model_name == "gin":
+        model = GINLinkPred(feature_dim, args.hidden_size, args.node_embedding_dim)
     elif model_name == "gat":
         model = GATLinkPred(
             feature_dim, args.hidden_size, args.node_embedding_dim, args.num_heads
